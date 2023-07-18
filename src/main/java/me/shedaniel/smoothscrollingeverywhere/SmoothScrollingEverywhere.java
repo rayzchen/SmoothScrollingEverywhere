@@ -13,16 +13,16 @@ import me.shedaniel.clothconfig2.impl.EasingMethods;
 import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.util.Window;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.PressableWidget;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.narration.NarratableEntry;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -114,23 +114,23 @@ public class SmoothScrollingEverywhere implements ClientModInitializer {
     
     @SuppressWarnings("deprecation")
     public static ConfigBuilder getConfigBuilder() {
-        ConfigBuilder builder = ConfigBuilder.create().setParentScreen(MinecraftClient.getInstance().currentScreen).setTitle(Text.translatable("title.smoothscrollingeverywhere.config"));
-        builder.setDefaultBackgroundTexture(new Identifier("minecraft:textures/block/oak_planks.png"));
-        ConfigCategory scrolling = builder.getOrCreateCategory(Text.literal("dajikdawjdi9whdna")); // TODO what is this?
+        ConfigBuilder builder = ConfigBuilder.create().setParentScreen(Minecraft.getInstance().screen).setTitle(Component.translatable("title.smoothscrollingeverywhere.config"));
+        builder.setDefaultBackgroundTexture(new ResourceLocation("minecraft:textures/block/oak_planks.png"));
+        ConfigCategory scrolling = builder.getOrCreateCategory(Component.literal("dajikdawjdi9whdna")); // TODO what is this?
         ConfigEntryBuilder entryBuilder = ConfigEntryBuilder.create();
-        DropdownBoxEntry<EasingMethod> easingMethodEntry = entryBuilder.startDropdownMenu(Text.translatable("option.smoothscrollingeverywhere.easingMethod"), DropdownMenuBuilder.TopCellElementBuilder.of(easingMethod, str -> {
+        DropdownBoxEntry<EasingMethod> easingMethodEntry = entryBuilder.startDropdownMenu(Component.translatable("option.smoothscrollingeverywhere.easingMethod"), DropdownMenuBuilder.TopCellElementBuilder.of(easingMethod, str -> {
             for (EasingMethod m : EasingMethods.getMethods())
                 if (m.toString().equals(str))
                     return m;
             return null;
         })).setDefaultValue(EasingMethod.EasingMethodImpl.LINEAR).setSaveConsumer(o -> easingMethod = o).setSelections(EasingMethods.getMethods()).build();
-        LongSliderEntry scrollDurationEntry = entryBuilder.startLongSlider(Text.translatable("option.smoothscrollingeverywhere.scrollDuration"), scrollDuration, 0, 5000).setTextGetter(integer -> Text.literal(integer <= 0 ? "Value: Disabled" : (integer > 1500 ? String.format("Value: %.1fs", integer / 1000f) : "Value: " + integer + "ms"))).setDefaultValue(600).setSaveConsumer(i -> scrollDuration = i).build();
-        DoubleListEntry scrollStepEntry = entryBuilder.startDoubleField(Text.translatable("option.smoothscrollingeverywhere.scrollStep"), scrollStep).setDefaultValue(19).setSaveConsumer(i -> scrollStep = i).build();
-        LongSliderEntry bounceMultiplierEntry = entryBuilder.startLongSlider(Text.translatable("option.smoothscrollingeverywhere.bounceBackMultiplier"), (long) (bounceBackMultiplier * 1000), -10, 750).setTextGetter(integer -> Text.literal(integer < 0 ? "Value: Disabled" : String.format("Value: %s", integer / 1000d))).setDefaultValue(240).setSaveConsumer(i -> bounceBackMultiplier = i / 1000d).build();
+        LongSliderEntry scrollDurationEntry = entryBuilder.startLongSlider(Component.translatable("option.smoothscrollingeverywhere.scrollDuration"), scrollDuration, 0, 5000).setTextGetter(integer -> Component.literal(integer <= 0 ? "Value: Disabled" : (integer > 1500 ? String.format("Value: %.1fs", integer / 1000f) : "Value: " + integer + "ms"))).setDefaultValue(600).setSaveConsumer(i -> scrollDuration = i).build();
+        DoubleListEntry scrollStepEntry = entryBuilder.startDoubleField(Component.translatable("option.smoothscrollingeverywhere.scrollStep"), scrollStep).setDefaultValue(19).setSaveConsumer(i -> scrollStep = i).build();
+        LongSliderEntry bounceMultiplierEntry = entryBuilder.startLongSlider(Component.translatable("option.smoothscrollingeverywhere.bounceBackMultiplier"), (long) (bounceBackMultiplier * 1000), -10, 750).setTextGetter(integer -> Component.literal(integer < 0 ? "Value: Disabled" : String.format("Value: %s", integer / 1000d))).setDefaultValue(240).setSaveConsumer(i -> bounceBackMultiplier = i / 1000d).build();
         
-        scrolling.addEntry(new TooltipListEntry<Object>(Text.translatable("option.smoothscrollingeverywhere.setDefaultSmoothScroll"), null) {
+        scrolling.addEntry(new TooltipListEntry<Object>(Component.translatable("option.smoothscrollingeverywhere.setDefaultSmoothScroll"), null) {
             final int width = 220;
-            private final ClickableWidget buttonWidget = new PressableWidget(0, 0, 0, 20, getFieldName()) {
+            private final AbstractWidget buttonWidget = new AbstractButton(0, 0, 0, 20, getFieldName()) {
                 @Override
                 public void onPress() {
                     easingMethodEntry.getSelectionElement().getTopRenderer().setValue(EasingMethod.EasingMethodImpl.LINEAR);
@@ -140,12 +140,12 @@ public class SmoothScrollingEverywhere implements ClientModInitializer {
                 }
 
 				@Override
-				public void appendClickableNarrations(NarrationMessageBuilder builder) {
+				public void appendClickableNarrations(NarrationElementOutput builder) {
 
 
 				}
             };
-            private final List<ClickableWidget> children = ImmutableList.of(buttonWidget);
+            private final List<AbstractWidget> children = ImmutableList.of(buttonWidget);
 
             @Override
             public Object getValue() {
@@ -162,31 +162,31 @@ public class SmoothScrollingEverywhere implements ClientModInitializer {
             }
 
             @Override
-            public List<? extends Element> children() {
+            public List<? extends GuiEventListener> children() {
                 return children;
             }
 
             @Override
-            public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
-                super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isSelected, delta);
-                Window window = MinecraftClient.getInstance().getWindow();
+            public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
+                super.render(graphics, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isSelected, delta);
+                Window window = Minecraft.getInstance().getWindow();
                 this.buttonWidget.active = this.isEditable();
                 this.buttonWidget.setY(y);
                 this.buttonWidget.setX(x + entryWidth / 2 - width / 2);
                 this.buttonWidget.setWidth(width);
-                this.buttonWidget.render(matrices, mouseX, mouseY, delta);
+                this.buttonWidget.render(graphics, mouseX, mouseY, delta);
             }
 
 			@Override
-			public List<? extends Selectable> narratables() {
+			public List<? extends NarratableEntry> narratables() {
 
 				return null;
 			}
         });
         
-        scrolling.addEntry(new TooltipListEntry<Object>(Text.translatable("option.smoothscrollingeverywhere.disableSmoothScroll"), null) {
+        scrolling.addEntry(new TooltipListEntry<Object>(Component.translatable("option.smoothscrollingeverywhere.disableSmoothScroll"), null) {
             final int width = 220;
-            private final ClickableWidget buttonWidget = new PressableWidget(0, 0, 0, 20, getFieldName()) {
+            private final AbstractWidget buttonWidget = new AbstractButton(0, 0, 0, 20, getFieldName()) {
                 @Override
                 public void onPress() {
                     easingMethodEntry.getSelectionElement().getTopRenderer().setValue(EasingMethod.EasingMethodImpl.NONE);
@@ -196,11 +196,11 @@ public class SmoothScrollingEverywhere implements ClientModInitializer {
                 }
 
                 @Override
-                public void appendClickableNarrations(NarrationMessageBuilder builder) {
+                public void appendClickableNarrations(NarrationElementOutput builder) {
 
                 }
             };
-            private final List<ClickableWidget> children = ImmutableList.of(buttonWidget);
+            private final List<AbstractWidget> children = ImmutableList.of(buttonWidget);
             
             @Override
             public Object getValue() {
@@ -217,23 +217,23 @@ public class SmoothScrollingEverywhere implements ClientModInitializer {
             }
             
             @Override
-            public List<? extends Element> children() {
+            public List<? extends GuiEventListener> children() {
                 return children;
             }
             
             @Override
-            public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
-                super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isSelected, delta);
-                Window window = MinecraftClient.getInstance().getWindow();
+            public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
+                super.render(graphics, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isSelected, delta);
+                Window window = Minecraft.getInstance().getWindow();
                 this.buttonWidget.active = this.isEditable();
                 this.buttonWidget.setY(y);
                 this.buttonWidget.setX(x + entryWidth / 2 - width / 2);
                 this.buttonWidget.setWidth(width);
-                this.buttonWidget.render(matrices, mouseX, mouseY, delta);
+                this.buttonWidget.render(graphics, mouseX, mouseY, delta);
             }
 
 			@Override
-			public List<? extends Selectable> narratables() {
+			public List<? extends NarratableEntry> narratables() {
 
 				return null;
 			}

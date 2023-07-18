@@ -1,20 +1,20 @@
 package me.shedaniel.smoothscrollingeverywhere.mixin;
 
-import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.gui.components.AbstractSelectionList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(EntryListWidget.class)
+@Mixin(AbstractSelectionList.class)
 public interface EntryListWidgetAccessor {
-    @Accessor("left")
+    @Accessor("x0")
     int getLeft();
     
-    @Accessor("right")
+    @Accessor("x1")
     int getRight();
     
-    @Accessor("top")
+    @Accessor("y0")
     int getTop();
     
-    @Accessor("bottom")
+    @Accessor("y1")
     int getBottom();
 }

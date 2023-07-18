@@ -4,26 +4,26 @@ import me.shedaniel.clothconfig2.api.ScrollingContainer;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.smoothscrollingeverywhere.mixin.EntryListWidgetAccessor;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.gui.widget.EntryListWidget;
-import net.minecraft.util.Lazy;
+import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.util.LazyLoadedValue;
 import java.lang.reflect.Method;
 
 @SuppressWarnings("rawtypes")
 public class EntryListWidgetScroller extends ScrollingContainer {
-    private final EntryListWidget widget;
+    private final AbstractSelectionList widget;
     private final EntryListWidgetAccessor accessor;
-    private static final Lazy<Method> MAX_POS = new Lazy<>(() -> {
+    private static final LazyLoadedValue<Method> MAX_POS = new LazyLoadedValue<>(() -> {
         try {
-            Method method = EntryListWidget.class.getDeclaredMethod(FabricLoader.getInstance().getMappingResolver().mapMethodName("intermediary", "net.minecraft.class_350", "method_25317", "()I"));
+            Method method = AbstractSelectionList.class.getDeclaredMethod(FabricLoader.getInstance().getMappingResolver().mapMethodName("intermediary", "net.minecraft.class_350", "method_25317", "()I"));
             method.setAccessible(true);
             return method;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     });
-    private static final Lazy<Method> SCROLLBAR_X = new Lazy<>(() -> {
+    private static final LazyLoadedValue<Method> SCROLLBAR_X = new LazyLoadedValue<>(() -> {
         try {
-            Method method = EntryListWidget.class.getDeclaredMethod(FabricLoader.getInstance().getMappingResolver().mapMethodName("intermediary", "net.minecraft.class_350", "method_25329", "()I"));
+            Method method = AbstractSelectionList.class.getDeclaredMethod(FabricLoader.getInstance().getMappingResolver().mapMethodName("intermediary", "net.minecraft.class_350", "method_25329", "()I"));
             method.setAccessible(true);
             return method;
         } catch (Exception e) {
@@ -31,7 +31,7 @@ public class EntryListWidgetScroller extends ScrollingContainer {
         }
     });
     
-    public EntryListWidgetScroller(EntryListWidget widget) {
+    public EntryListWidgetScroller(AbstractSelectionList widget) {
         this.widget = widget;
         this.accessor = (EntryListWidgetAccessor) widget;
     }
