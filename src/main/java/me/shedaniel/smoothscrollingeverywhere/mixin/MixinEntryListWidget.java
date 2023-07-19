@@ -1,7 +1,6 @@
 package me.shedaniel.smoothscrollingeverywhere.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import me.shedaniel.clothconfig2.ClothConfigInitializer;
 import me.shedaniel.clothconfig2.api.ScrollingContainer;
 import me.shedaniel.smoothscrollingeverywhere.EntryListWidgetScroller;
@@ -24,7 +23,7 @@ public abstract class MixinEntryListWidget {
     @Shadow private double scrollAmount;
     
     @Shadow
-    protected abstract void renderDecorations(PoseStack stack, int int_1, int int_2);
+    protected abstract void renderDecorations(GuiGraphics graphics, int int_1, int int_2);
     
     @Inject(method = "setScrollAmount", at = @At("HEAD"))
     public void setScrollAmount(double double_1, CallbackInfo callbackInfo) {
@@ -39,7 +38,7 @@ public abstract class MixinEntryListWidget {
     }
     
     @Inject(method = "render", at = @At("HEAD"))
-    public void render(PoseStack stack, int int_1, int int_2, float delta, CallbackInfo callbackInfo) {
+    public void render(GuiGraphics graphics, int int_1, int int_2, float delta, CallbackInfo callbackInfo) {
         scroller.updatePosition(delta);
         this.scrollAmount = scroller.scrollAmount;
     }
@@ -47,12 +46,12 @@ public abstract class MixinEntryListWidget {
     @Inject(method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;getMaxScroll()I", ordinal = 0, shift = At.Shift.AFTER),
             cancellable = true)
-    public void renderScrollbar(GuiGraphics graphics, int int_1, int int_2, float float_1, PoseStack stack, CallbackInfo callbackInfo) {
+    public void renderScrollbar(GuiGraphics graphics, int int_1, int int_2, float float_1, CallbackInfo callbackInfo) {
         scroller.renderScrollBar(graphics);
         //RenderSystem.shadeModel(7424);
         //RenderSystem.enableAlphaTest();
         RenderSystem.disableBlend();
-        this.renderDecorations(stack, int_1, int_2);
+        this.renderDecorations(graphics, int_1, int_2);
         callbackInfo.cancel();
     }
 }
